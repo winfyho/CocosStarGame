@@ -21,6 +21,8 @@ cc.Class({
         //加速度
         accel: 0,
 
+        IntialPos: 0,
+
         JumpAudio: {
             default: null,
             type: cc.AudioClip
@@ -69,10 +71,6 @@ cc.Class({
     },
 
     onLoad() {
-        var jumpAction = this.runJumpAction();
-
-        cc.tween(this.node).then(jumpAction).start();
-
         this.accLeft = false;
         this.accRight = false;
 
@@ -90,8 +88,19 @@ cc.Class({
     },
 
 
-    start() {
+    StartmoveAt: function(pos) {
+        this.enabled = true;
+        this.xSpeed = 0;
+        this.node.setPosition(pos);
 
+        var jumpAction = this.runJumpAction();
+        cc.tween(this.node).then(jumpAction).start();
+    },
+
+
+    stopMove() {
+        this.node.stopAllActions();
+        this.enabled = false;
     },
 
     update(dt) {
@@ -106,6 +115,19 @@ cc.Class({
             this.xSpeed = this.maxSpeed * this.xSpeed / Math.abs(this.maxSpeed);
         }
 
+        //根据速度更新主角位置
         this.node.x += this.xSpeed * dt;
+
+        // console.log(this.node.parent.width);
+        // console.log(this.node.x);
+
+        //限制在屏幕内
+        if (this.node.x > this.node.parent.width / 2) {
+            this.node.x = this.node.parent.width / 2
+            this.xSpeed = 0;
+        } else if (this.node.x < -this.node.parent.width / 2) {
+            this.node.x = -this.node.parent.width / 2
+            this.xSpeed = 0;
+        }
     },
 });

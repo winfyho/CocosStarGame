@@ -42,28 +42,50 @@ cc.Class({
         GainAudio: {
             default: null,
             type: cc.AudioClip
-        }
+        },
+
+        GameOverText: {
+            default: null,
+            type: cc.Label
+        },
+
+
+        startButton: {
+            default: null,
+            type: cc.Button,
+        },
     },
 
     // LIFE-CYCLE CALLBACKS:
 
     onLoad() {
-
-        //获取地平面的y轴坐标
-
         //初始化计时器
         this.timer = 0;
         this.starDuration = 0;
 
+        //获取地平面的y轴坐标
         this.groundY = this.ground.y + this.ground.height / 2;
-        this.spawnNewStar();
 
-        this.score = 0;
 
+        //展现菜单还是运行游戏,enable确立是否调用update
+        this.enabled = false;
     },
 
-    start() {
 
+    //开始游戏
+    startGame() {
+        //初始化计分
+        this.resetScore();
+
+        this.enabled = true;
+
+        this.GameOverText.node.active = false;
+
+        this.startButton.node.active = false;
+
+        this.player.getComponent('Player').StartmoveAt(cc.v2(0, this.groundY));
+
+        this.spawnNewStar();
     },
 
     spawnNewStar() {
@@ -97,12 +119,17 @@ cc.Class({
         cc.audioEngine.playEffect(this.GainAudio, false);
     },
 
+    resetScore() {
+        this.score = 0;
+        this.ScoreText.string = 'Score:' + this.score;
+    },
+
 
     update(dt) {
-        console.log(this.starDuration);
+        //console.log(this.starDuration);
         if (this.timer > this.starDuration) {
             this.gameOver();
-            console.log("gameOver");
+            this.enabled = false;
             return;
         }
         this.timer += dt;
@@ -110,8 +137,12 @@ cc.Class({
 
 
     gameOver() {
-        this.player.stopAllActions();
-        cc.director.loadScene('MainScene');
+        //展示gameOverText
+        this.GameOverText.node.active = true;
+
+        this.startButton.node.active = true;
+
+        this.player.getComponent('Player').stopMove();
     }
 
 });

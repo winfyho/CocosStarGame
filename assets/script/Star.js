@@ -31,10 +31,14 @@ cc.Class({
         //当星星被收集时，调用Game中的接口，生成新的星星
         this.game.spawnNewStar();
         this.game.gainScore();
+        this.starDestroy();
+    },
+    // onLoad () {},
+
+    starDestroy() {
         //随后销毁当前星星
         this.node.destroy();
     },
-    // onLoad () {},
 
     start() {
 
@@ -49,8 +53,6 @@ cc.Class({
             this.onPick();
             return;
         }
-
-
         var opacityRatio = 1 - this.game.timer / this.game.starDuration;
         var minOpacity = 50;
         this.node.opacity = minOpacity + Math.floor(opacityRatio * (255 - minOpacity));
