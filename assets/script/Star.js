@@ -20,28 +20,31 @@ cc.Class({
 
     getPlayerDistance() {
         var playerPos = this.game.player.getPosition();
-        //console.log("playerPos", playerPos);
+
         //根据两点计算两点之间的距离
         var dist = this.node.position.sub(playerPos).mag();
-        //console.log("Dist", dist);
+
         return dist;
     },
 
     onPick() {
         //当星星被收集时，调用Game中的接口，生成新的星星
-        this.game.spawnNewStar();
-        this.game.gainScore();
-        this.starDestroy();
+        cc.tween(this.node).
+        to(0.2, { scale: 2 })
+            .call(() => {
+                this.game.spawnNewStar();
+                this.game.gainScore();
+                //progress 更新
+                this.game.progressBarInit();
+                this.starDestroy();
+            })
+            .start()
     },
     // onLoad () {},
 
     starDestroy() {
         //随后销毁当前星星
         this.node.destroy();
-    },
-
-    start() {
-
     },
 
 

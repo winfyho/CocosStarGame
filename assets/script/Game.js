@@ -44,15 +44,16 @@ cc.Class({
             type: cc.AudioClip
         },
 
-        GameOverText: {
-            default: null,
-            type: cc.Label
-        },
 
 
         startButton: {
             default: null,
             type: cc.Button,
+        },
+
+        starProgressbar: {
+            default: null,
+            type: cc.ProgressBar
         },
     },
 
@@ -69,6 +70,9 @@ cc.Class({
 
         //展现菜单还是运行游戏,enable确立是否调用update
         this.enabled = false;
+
+        //progressbar hide
+        this.starProgressbar.node.active = false;
     },
 
 
@@ -79,13 +83,25 @@ cc.Class({
 
         this.enabled = true;
 
-        this.GameOverText.node.active = false;
-
         this.startButton.node.active = false;
 
         this.player.getComponent('Player').StartmoveAt(cc.v2(0, this.groundY));
 
         this.spawnNewStar();
+
+        //progressbar show
+        this.starProgressbar.node.active = true;
+        this.progressBarInit();
+
+    },
+
+    progressBarInit() {
+        this.progress = 0;
+        this.starProgressbar.progress = 1;
+    },
+
+    progressBarUpdate() {
+        this.starProgressbar.progress = 1 - this.progress / this.starDuration;
     },
 
     spawnNewStar() {
@@ -115,8 +131,21 @@ cc.Class({
     gainScore() {
         this.score += 1;
         this.ScoreText.string = 'Score:' + this.score;
-
         cc.audioEngine.playEffect(this.GainAudio, false);
+        this.switchLevel();
+    },
+
+
+    switchLevel() {
+        switch (this.score) {
+            case 5:
+                console.log("进入第二关");
+                cc.director.loadScene('SecondScenne');
+                break;
+
+            default:
+                break;
+        }
     },
 
     resetScore() {
@@ -132,17 +161,22 @@ cc.Class({
             this.enabled = false;
             return;
         }
+        this.progress += dt;
         this.timer += dt;
+        //console.log(1 - this.progress / this.starDuration);
+        this.progressBarUpdate();
     },
 
 
     gameOver() {
-        //展示gameOverText
-        this.GameOverText.node.active = true;
 
-        this.startButton.node.active = true;
+        cc.director.loadScene("GameOverScene");
 
-        this.player.getComponent('Player').stopMove();
+        // this.startButton.node.active = true;
+
+        // this.player.getComponent('Player').stopMove();
+
+        // //progressbar show
+        // this.starProgressbar.node.active = false;
     }
-
 });

@@ -21,12 +21,12 @@ cc.Class({
         //加速度
         accel: 0,
 
-        IntialPos: 0,
-
         JumpAudio: {
             default: null,
             type: cc.AudioClip
-        }
+        },
+
+        squashDuration: 0
     },
 
     runJumpAction() {
@@ -34,10 +34,15 @@ cc.Class({
         var jumpDown = cc.tween().by(this.jumpDuration, { y: -this.jumpHeight }, { easing: "sineIn" });
 
 
-        //创建一个缓动 按jumpUp，jumpDown的顺序执行动作
-        var tween = cc.tween().sequence(jumpUp, jumpDown).call(this.playJumpAudio, this);
+
         //添加回调函数call在前面动作执行结束后播放音效
-        //this.playJumpAudio();
+
+        var squash = cc.scaleTo(this.squashDuration, 1, 0.6);
+        var stretch = cc.scaleTo(this.squashDuration, 1, 1.2);
+        var scaleBack = cc.scaleTo(this.squashDuration, 1, 1);
+
+        //创建一个缓动 按jumpUp，jumpDown的顺序执行动作
+        var tween = cc.tween().sequence(squash, stretch, jumpUp, scaleBack, jumpDown).call(this.playJumpAudio, this);
         //重复执行动作
         return cc.tween().repeatForever(tween);
     },
@@ -66,6 +71,24 @@ cc.Class({
         }
     },
 
+
+    onTouchStart(event) {
+        var touchLoc = event.getLocation();
+        if (touchLoc.x >= cc.winSize.width / 2) {
+            this.accLeft = false;
+            this.accRight = true;
+        } else {
+            this.accLeft = true;
+            this.accRight = false;
+        }
+    },
+
+    onTouchEnd(event) {
+        this.accLeft = false;
+        this.accRight = false;
+    },
+
+    //JumpAudio
     playJumpAudio() {
         cc.audioEngine.playEffect(this.JumpAudio, false);
     },
@@ -75,9 +98,15 @@ cc.Class({
         this.accRight = false;
 
         this.xSpeed = 0;
+
         //键盘的监听事件
         cc.systemEvent.on(cc.SystemEvent.EventType.KEY_DOWN, this.onKeydown, this);
         cc.systemEvent.on(cc.SystemEvent.EventType.KEY_UP, this.onKeyup, this);
+
+        //触摸屏监听事件
+        var touchReceiver = cc.Canvas.instance.node;
+        touchReceiver.on('touchstart', this.onTouchStart, this);
+        touchReceiver.on('touchend', this.onTouchEnd, this);
     },
 
     onDestroy() {
@@ -85,6 +114,11 @@ cc.Class({
         //关闭键盘的监听事件
         cc.systemEvent.off(cc.SystemEvent.EventType.KEY_DOWN, this.onKeydown, this.node);
         cc.systemEvent.off(cc.SystemEvent.EventType.KEY_UP, this.onKeyup, this.node);
+
+        //关闭触摸屏监听事件
+        var touchReceiver = cc.Canvas.instance.node;
+        touchReceiver.off('touchstart', this.onTouchStart, this);
+        touchReceiver.off('touchend', this.onTouchEnd, this);
     },
 
 
